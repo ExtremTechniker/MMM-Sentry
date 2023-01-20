@@ -33,7 +33,11 @@ Module.register("MMM-Sentry", {
         flex.style.flexDirection = "row";
         flex.style.columnGap = "20px";
         for ([project_slug, data] of Object.entries(this.sentryData)) {
-            const displayName = this.config.projects.filter((x) => x.project_slug == project_slug)[0].displayName;
+            let displayName = this.config.projects.filter((x) => x.project_slug == project_slug)[0].displayName;
+
+						if(displayName === undefined || displayName === '') {
+							displayName = project_slug;
+						}
 
             const elem = document.createElement("div");
 
