@@ -1,109 +1,110 @@
 /* Magic Mirror
  * Module: Sentry
- * 
+ *
  * By ExtremTechniker
  */
 Module.register("MMM-Sentry", {
-	defaults: {
-		sentry_base_url: 'https://sentry.io',
-		updateInterval: 30,
-		token: '',
-		projects: [],
-	},
-	getTranslations: () => false,
+    defaults: {
+        sentry_base_url: "https://sentry.io",
+        updateInterval: 30,
+        token: "",
+        projects: []
+    },
+    getTranslations: () => false,
 
-	start: function() {
-		Log.info('Starting module: ' + this.name);
+    start: function () {
+        Log.info("Starting module: " + this.name);
 
-		this.loaded = false;
-		this.sentryData = {};
-		this.scheduleUpdate();
-	},
+        this.loaded = false;
+        this.sentryData = {};
+        this.scheduleUpdate();
+    },
 
-	getDom: function(){
-		const wrapper = document.createElement('div');
-		
-		if(!this.loaded) {
-			wrapper.innerHTML = this.translate("LOADING");
-			return wrapper;
-		}
+    getDom: function () {
+        const wrapper = document.createElement("div");
 
-		const flex = document.createElement('div');
-		flex.style.display = 'flex';
-		flex.style.flexDirection = 'row';
-		flex.style.columnGap = '20px';	
-		for([project_slug, data] of Object.entries(this.sentryData)) {
+        if (!this.loaded) {
+            wrapper.innerHTML = this.translate("LOADING");
+            return wrapper;
+        }
 
-			const displayName = this.config.projects.filter(x => x.project_slug == project_slug)[0].displayName;
+        const flex = document.createElement("div");
+        flex.style.display = "flex";
+        flex.style.flexDirection = "row";
+        flex.style.columnGap = "20px";
+        for ([project_slug, data] of Object.entries(this.sentryData)) {
+            const displayName = this.config.projects.filter((x) => x.project_slug == project_slug)[0].displayName;
 
-			const elem = document.createElement('div');
+            const elem = document.createElement("div");
 
-			const name = document.createElement('p');
-			name.innerText = displayName;
-			name.style.fontWeight = 'bold';
-	
-			elem.append(name);
+            const name = document.createElement("p");
+            name.innerText = displayName;
+            name.style.fontWeight = "bold";
 
-			const issues = document.createElement('p');
-			issues.innerText = 'Unresolved';
-			const issueCount = document.createElement('span');
-			issueCount.style.display = 'block';
-			issueCount.style.fontSize = '24pt';
-			issueCount.innerText = data.length;
-			issues.append(issueCount);
-		
-			elem.append(issues);
+            elem.append(name);
 
-			flex.append(elem);	
+            const issues = document.createElement("p");
+            issues.innerText = "Unresolved";
+            const issueCount = document.createElement("span");
+            issueCount.style.display = "block";
+            issueCount.style.fontSize = "24pt";
+            issueCount.innerText = data.length;
+            issues.append(issueCount);
 
-		}
-		wrapper.append(flex);
-		
-		return wrapper;
-	},
+            elem.append(issues);
 
-	updateUI: function() {
-		var self = this;
-		try {
-			self.fetchSentryRequest();
-		} catch (exception) {
-			Log.error(self.name+ ":"+exception.toString());
-		}	
+            flex.append(elem);
+        }
+        wrapper.append(flex);
 
-	},
+        return wrapper;
+    },
 
-	fetchSentryRequest: function() {
-		for(project of this.config.projects) {
-			this.sendSocketNotification("LOAD_ISSUES", {sentry_base_url: this.config.sentry_base_url, token: this.config.token, organisation_slug: project.organisation_slug, project_slug: project.project_slug});
-		}
-	},
+    updateUI: function () {
+        var self = this;
+        try {
+            self.fetchSentryRequest();
+        } catch (exception) {
+            Log.error(self.name + ":" + exception.toString());
+        }
+    },
 
-	socketNotificationReceived: function(notification, payload) {
-		switch(notification) {
-			case 'LOADED_ISSUES':
-				let obj = payload;
-				
-				this.sentryData[obj.project_slug] = obj.data;
-			break;
-		}
-	
-		if(Object.entries(this.sentryData).length !== 0) {
-			this.loaded = true;
-		}
-		this.updateDom();
-	},
+    fetchSentryRequest: function () {
+        for (project of this.config.projects) {
+            this.sendSocketNotification("LOAD_ISSUES", {
+                sentry_base_url: this.config.sentry_base_url,
+                token: this.config.token,
+                organisation_slug: project.organisation_slug,
+                project_slug: project.project_slug
+            });
+        }
+    },
 
-	scheduleUpdate: function(delay) {
-		var nextLoad = this.config.updateInterval;
-		if (typeof delay != "undefined" && delay >= 0) {
-			nextLoad = delay;
-		}
-		
-		var self = this;
-		setInterval(() => {
-			 self.updateUI()
-		}, this.config.updateInterval * 1000);
-		self.updateUI();
-	}
+    socketNotificationReceived: function (notification, payload) {
+        switch (notification) {
+            case "LOADED_ISSUES":
+                let obj = payload;
 
+                this.sentryData[obj.project_slug] = obj.data;
+                break;
+        }
+
+        if (Object.entries(this.sentryData).length !== 0) {
+            this.loaded = true;
+        }
+        this.updateDom();
+    },
+
+    scheduleUpdate: function (delay) {
+        var nextLoad = this.config.updateInterval;
+        if (typeof delay != "undefined" && delay >= 0) {
+            nextLoad = delay;
+        }
+
+        var self = this;
+        setInterval(() => {
+            self.updateUI();
+        }, this.config.updateInterval * 1000);
+        self.updateUI();
+    }
 });
