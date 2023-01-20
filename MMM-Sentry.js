@@ -74,7 +74,7 @@ Module.register("MMM-Sentry", {
             this.sendSocketNotification("LOAD_ISSUES", {
                 sentry_base_url: this.config.sentry_base_url,
                 token: this.config.token,
-                organisation_slug: project.organisation_slug,
+                organization_slug: project.organization_slug,
                 project_slug: project.project_slug
             });
         }
